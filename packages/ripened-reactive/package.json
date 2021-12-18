@@ -1,0 +1,23 @@
+{
+  "name": "@ripened/reactive",
+  "description": "ripened reactive",
+  "author": "Tobias Zimmermann",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tobias-z/ripened",
+    "directory": "packages/ripened-reactive"
+  },
+  "bugs": {
+    "url": "https://github.com/tobias-z/ripened/issues"
+  },
+  "keywords": [
+    "reactive",
+    "state"
+  ],
+  "scripts": {
+    "build": "tsc"
+  }
+}

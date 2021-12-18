@@ -1,0 +1,24 @@
+{
+  "name": "ripened",
+  "description": "For building reactive websites",
+  "author": "Tobias Zimmermann",
+  "version": "0.0.1",
+  "main": "index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tobias-z/ripened",
+    "directory": "packages/ripened"
+  },
+  "bugs": {
+    "url": "https://github.com/tobias-z/ripened/issues"
+  },
+  "keywords": [
+    "reactive",
+    "websites",
+    "dom"
+  ],
+  "scripts": {
+    "build": "tsc"
+  }
+}

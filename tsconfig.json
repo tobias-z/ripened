@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "compilerOptions": {
+    // removes warnings from jest
+    "esModuleInterop": true
+  },
+  "references": [
+    { "path": "packages/ripened" },
+    { "path": "packages/ripened-runtime" },
+    { "path": "packages/ripened-reactive" }
+  ]
+}

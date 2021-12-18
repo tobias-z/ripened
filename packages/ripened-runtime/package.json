@@ -1,0 +1,30 @@
+{
+  "name": "@ripened/runtime",
+  "description": "ripened runtime - jsx transformed into html",
+  "author": "Tobias Zimmermann",
+  "version": "0.0.1",
+  "main": "./dist/index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tobias-z/ripened",
+    "directory": "packages/ripened-runtime"
+  },
+  "bugs": {
+    "url": "https://github.com/tobias-z/ripened/issues"
+  },
+  "keywords": [
+    "build",
+    "serve",
+    "dom"
+  ],
+  "dependencies": {
+    "esbuild": "^0.14.2",
+    "create-serve": "^1.0.1",
+    "esbuild-css-modules-plugin": "^2.0.9"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "yarn build && node ../../build/@ripened/runtime/run/esbuildConfig.js --dev"
+  }
+}

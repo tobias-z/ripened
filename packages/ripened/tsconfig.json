@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "jsx": "preserve",
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "Node",
+    "lib": ["ES2019", "DOM", "DOM.Iterable"],
+
+    "rootDir": ".",
+    "outDir": "../../build/ripened"
+  }
+}
