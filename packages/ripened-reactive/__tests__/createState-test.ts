@@ -1,18 +1,27 @@
-// import { h } from "../../ripened-runtime/";
-// import { createState } from "../state/createState";
+import { h } from "../../ripened-runtime/index";
+import { createState } from "../state/createState";
 
-// describe("jsx", function () {
-//   test("setState updates the dom", function () {
-//     const [count, setCount] = createState(0);
-//     const theString = `text ${count()}`;
-//     const node = h("div", null, theString) as HTMLElement;
-//     expect(node.innerText).toBe("text 0");
+describe("jsx", function () {
+  test("setState updates the dom", async function () {
+    const [count, setCount] = createState(0);
+    const theString = () => `text ${count()} and ${count()}`;
+    document.body.appendChild(
+      h(
+        "div",
+        null,
+        () => h("h2", null, "hello world"),
+        () => h("h1", { id: "hey" }, null),
+        () => h("p", { id: "yo" }, theString)
+      ) as HTMLElement
+    );
 
-//     setCount(c => c + 1);
+    setCount(count() + 1);
+    expect(document.getElementById("yo")?.innerText).toBe("text 1 and 1");
 
-//     expect(Number(count())).toBe(1);
-//     expect(node.innerText).toBe("text 1");
-//   });
-// });
+    // TODO: Implement batching
+    setCount(count() + 1);
+    setCount(count() + 1);
 
-test("s", () => expect("yay").toBe("yay"));
+    expect(document.getElementById("yo")?.innerText).toBe("text 3 and 3");
+  });
+});

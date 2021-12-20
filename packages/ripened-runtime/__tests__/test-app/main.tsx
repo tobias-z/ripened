@@ -1,14 +1,17 @@
 import { render } from "../../jsx/render";
 import Component from "./something";
+import { createState } from "../../../ripened-reactive";
 
 function Something() {
+  const [count, setCount] = createState(0);
   const hello = <div>something</div>;
 
   hello.innerHTML += (<p>something else</p>).outerHTML;
 
   return (
     <div>
-      <p>hello</p>
+      <p>count: {count()}</p>
+      <button onclick={() => setCount((c) => c + 1)}>increment</button>
       <a href="/somewhere">somewhere</a>
       {hello}
       <Component something="hello" yo={3} />

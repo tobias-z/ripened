@@ -1,3 +1,5 @@
+import { getConfig } from "@ripened/runtime";
+
 type Getter<T> = () => T & {
   getId: () => number;
 };
@@ -10,29 +12,24 @@ export function createState<T extends Object>(
   initialState: T
 ): [Getter<T>, Setter<T>] {
   let state: T = initialState;
-  const id = Math.random();
-  state = getNewState(state);
-
-  function getNewState(state: T) {
-    state = Object.assign(state, {
-      getId() {
-        return id;
-      },
-    });
-    return state;
-  }
+  const elementIds = new Set<number>();
 
   return [
     function () {
+      const config = getConfig();
+      elementIds.add(config.count);
       return state;
     } as Getter<T>,
     function (value) {
       if (typeof value === "function") {
-        state = getNewState(value(state));
+        state = value(state);
       }
       if (typeof value !== "function") {
-        state = getNewState(value);
-        return;
+        state = value;
+      }
+      const config = getConfig();
+      for (const id of elementIds) {
+        config.getCallback(id)?.(id);
       }
     },
   ] as [Getter<T>, Setter<T>];
