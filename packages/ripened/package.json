@@ -2,7 +2,7 @@
   "name": "ripened",
   "description": "For building reactive websites",
   "author": "Tobias Zimmermann",
-  "version": "0.0.1",
+  "version": "0.0.7",
   "main": "index.js",
   "license": "MIT",
   "repository": {

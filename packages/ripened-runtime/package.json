@@ -2,7 +2,7 @@
   "name": "@ripened/runtime",
   "description": "ripened runtime - jsx transformed into html",
   "author": "Tobias Zimmermann",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "main": "../../build/@ripened/runtime/index.js",
   "license": "MIT",
   "repository": {
@@ -18,6 +18,9 @@
     "serve",
     "dom"
   ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "dependencies": {
     "esbuild": "^0.14.2",
     "create-serve": "^1.0.1",

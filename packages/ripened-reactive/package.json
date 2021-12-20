@@ -2,7 +2,7 @@
   "name": "@ripened/reactive",
   "description": "ripened reactive",
   "author": "Tobias Zimmermann",
-  "version": "1.0.0",
+  "version": "0.0.5",
   "main": "./dist/index.js",
   "license": "MIT",
   "repository": {
@@ -17,6 +17,12 @@
     "reactive",
     "state"
   ],
+  "peerDependencies": {
+    "@ripened/runtime": ">=0.0.1"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "build": "tsc"
   }

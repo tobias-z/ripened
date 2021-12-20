@@ -2,7 +2,7 @@ const { readdirSync } = require("fs");
 const { join } = require("path");
 const { exec } = require("child_process");
 
-module.exports = function (command) {
+module.exports = async function (command) {
   const path = join(`${process.cwd()}`);
   const packages = readdirSync(`${path}/packages`);
   for (const pack of packages) {
