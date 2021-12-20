@@ -24,6 +24,9 @@
     "build": "node ./scripts/buildAll.cjs",
     "test": "jest --watch",
     "test:all": "jest",
-    "lint": "prettier --write --ignore-path .eslintignore . && eslint --cache --ext .tsx,.ts,.js,.jsx . --fix"
-  }
+    "lint": "prettier --write --ignore-path .eslintignore . && eslint --cache --ext .tsx,.ts,.js,.jsx . --fix",
+    "deploy": "node scripts/deploy.cjs",
+    "version": "node scripts/version.cjs"
+  },
+  "version": "0.0.0"
 }
