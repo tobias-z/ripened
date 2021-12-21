@@ -1,23 +1,19 @@
 const { join, resolve } = require("path");
-const { exec } = require("child_process");
-const commandRunner = require("./command-runner.cjs");
+const { execSync } = require("child_process");
 
 const packages = ["reactive", "runtime"];
 
 function deploy(buildDir, package) {
-  console.log(buildDir);
-  exec(
-    `cp ./packages/ripened-${package}/package.json ${buildDir} && npm publish --access public ${buildDir}`,
-    printError
+  execSync(
+    `cp ./packages/ripened-${package}/package.json ${buildDir} && npm publish --access public ${buildDir}`
   );
 }
 
-const removeBuild = () => exec("rm -rf ../build", printError);
+const removeBuild = () => execSync("rm -rf build");
 
-async function execute() {
+function execute() {
   removeBuild();
-  exec("cd .. && yarn build", printError);
-  await commandRunner("npm version patch");
+  execSync("yarn build");
   const packagesDirectory = resolve(__dirname, "../build");
   for (const package of packages) {
     deploy(join(packagesDirectory, "@ripened", package), package);
@@ -25,16 +21,4 @@ async function execute() {
   removeBuild();
 }
 
-function printError(error, stdout) {
-  console.error(error);
-  console.log(stdout);
-}
-
-execute()
-  .then(() => {
-    process.exit(0);
-  })
-  .catch(function (error) {
-    console.error(error);
-    process.exit(1);
-  });
+execute();

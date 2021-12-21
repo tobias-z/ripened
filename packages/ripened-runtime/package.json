@@ -2,7 +2,7 @@
   "name": "@ripened/runtime",
   "description": "ripened runtime - jsx transformed into html",
   "author": "Tobias Zimmermann",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "main": "../../build/@ripened/runtime/index.js",
   "license": "MIT",
   "repository": {
