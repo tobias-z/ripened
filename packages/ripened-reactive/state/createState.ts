@@ -1,9 +1,6 @@
 import { getConfig } from "@ripened/runtime";
 
-type Getter<T> = () => T & {
-  getId: () => number;
-};
-
+type Getter<T> = () => T;
 type Setter<T> = (value: T | ((value: T) => T)) => void;
 
 // TODO: Fix this

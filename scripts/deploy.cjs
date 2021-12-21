@@ -31,7 +31,7 @@ function printError(error, stdout) {
 }
 
 execute()
-  .then(function () {
+  .then(() => {
     process.exit(0);
   })
   .catch(function (error) {

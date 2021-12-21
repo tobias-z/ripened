@@ -31,6 +31,6 @@
     "dev": "yarn build && node ../../build/@ripened/runtime/run/esbuildConfig.js --dev"
   },
   "bin": {
-    "@ripened/runtime": "run/esbuildConfig.js"
+    "ripened-run": "run/esbuildConfig.js"
   }
 }

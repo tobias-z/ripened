@@ -74,6 +74,7 @@ function setCorrectFormatting(bundleFile: string) {
       .split("h(")
       .map((item, idx) => {
         const res = item.split(",").map((val, idx) => {
+          // TODO: Implement props as function
           // if (idx === 1 && (val.trim() === "null" || val.startsWith(" {"))) {
           //   if (val.startsWith(" {")) {
           //     return `() => {
@@ -92,8 +93,6 @@ function setCorrectFormatting(bundleFile: string) {
         return "h(" + res.join(",");
       })
       .join("");
-
-    // result = result.slice(0, -2) + ");";
 
     writeFile(bundleFile, result, "utf8", function (err) {
       if (err) return console.error(err);
