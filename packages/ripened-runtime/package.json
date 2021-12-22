@@ -2,7 +2,7 @@
   "name": "@ripened/runtime",
   "description": "ripened runtime - jsx transformed into html",
   "author": "Tobias Zimmermann",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "main": "../../build/@ripened/runtime/index.js",
   "license": "MIT",
   "repository": {
@@ -31,6 +31,6 @@
     "dev": "yarn build && node ../../build/@ripened/runtime/run/esbuildConfig.js --dev"
   },
   "bin": {
-    "ripened-run": "run/esbuildConfig.js"
+    "ripened-run": "run/esbuildConfig.mjs"
   }
 }

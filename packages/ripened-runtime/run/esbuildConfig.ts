@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { build } from "esbuild";
 import serve, { log } from "create-serve";
 import cssModulesPlugin from "esbuild-css-modules-plugin";

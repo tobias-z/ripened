@@ -41,18 +41,13 @@
     function createDomNode(id, hasRendered) {
       const alreadyCreated = document.querySelector(`[data-__id="${id}"]`);
       const children = getChildren(childrenFn);
-      const domNode = alreadyCreated
-        ? alreadyCreated
-        : getDomNode(element, id, props, children);
+      const domNode = alreadyCreated ? alreadyCreated : getDomNode(element, id, props, children);
       if (!domNode) {
-        const theChildren = children[0]
-          ? children
-          : props == null
-          ? void 0
-          : props.children;
+        const theChildren = children[0] ? children : props == null ? void 0 : props.children;
         return theChildren;
       }
-      if (Array.isArray(domNode)) return domNode;
+      if (Array.isArray(domNode))
+        return domNode;
       if (props && typeof element === "string") {
         for (const [key, value] of Object.entries(props)) {
           if (key === "style") {
@@ -68,7 +63,8 @@
           domNode[key] = value;
         }
       }
-      if (Array.isArray(children) && children.length === 0) return domNode;
+      if (Array.isArray(children) && children.length === 0)
+        return domNode;
       if (!Array.isArray(children)) {
         return domNode;
       }
@@ -77,7 +73,8 @@
           for (const c of child) {
             if (Array.isArray(c))
               c.forEach((ce) => appendNode(ce, domNode, hasRendered));
-            else appendNode(c, domNode, hasRendered);
+            else
+              appendNode(c, domNode, hasRendered);
           }
           continue;
         }
@@ -114,7 +111,8 @@
       domNode.dataset.__id = String(count);
     } else {
       const p = props ? props : {};
-      if (children) p["children"] = children;
+      if (children)
+        p["children"] = children;
       domNode = element(p);
     }
     return domNode;
@@ -157,68 +155,20 @@
 
   // __tests__/test-app/something.tsx
   function Component({ something }) {
-    return /* @__PURE__ */ h(
-      Fragment,
-      null,
-      () =>
-        /* @__PURE__ */ h(
-          "p",
-          null,
-          () => "xxx xd ",
-          something,
-          " hello worldd ",
-          12 + 2
-        ),
-      () =>
-        /* @__PURE__ */ h("h1", null, () => "Hello world yoyo test2dsadasdsa"),
-      () => /* @__PURE__ */ h("p", null, () => "sup")
-    );
+    return /* @__PURE__ */ h(Fragment, null,() =>  /* @__PURE__ */ h("p", null,() =>  "xxx xd ", something, " hello worldd ", 12 + 2),() =>  /* @__PURE__ */ h("h1", null,() =>  "Hello world yoyo test2dsadasdsa"),() =>  /* @__PURE__ */ h("p", null,() =>  "sup"));
   }
-
-  // jsx/config.ts
-  var Config2 = class {
-    constructor() {
-      this._count = 0;
-      this._callbacks = /* @__PURE__ */ new Map();
-    }
-    static getInstance() {
-      if (!Config2.instance) {
-        Config2.instance = new Config2();
-      }
-      return Config2.instance;
-    }
-    setNewId() {
-      this._count++;
-    }
-    assignCallback(cb) {
-      this._callbacks.set(this._count, cb);
-    }
-    getCallback(id) {
-      return this._callbacks.get(id);
-    }
-    getActiveCallback() {
-      return this._callbacks.get(this._count);
-    }
-    get count() {
-      return this._count;
-    }
-    get callbacks() {
-      return this._callbacks;
-    }
-  };
-  var getConfig2 = () => Config2.getInstance();
 
   // ../ripened-reactive/state/createState.ts
   function createState(initialState) {
     let state = initialState;
     const elementIds = /* @__PURE__ */ new Set();
     return [
-      function () {
-        const config = getConfig2();
+      function() {
+        const config = getConfig();
         elementIds.add(config.count);
         return state;
       },
-      function (value) {
+      function(value) {
         var _a;
         if (typeof value === "function") {
           state = value(state);
@@ -226,70 +176,35 @@
         if (typeof value !== "function") {
           state = value;
         }
-        const config = getConfig2();
+        const config = getConfig();
         for (const id of elementIds) {
           (_a = config.getCallback(id)) == null ? void 0 : _a(id);
         }
-      },
+      }
     ];
   }
 
   // __tests__/test-app/main.tsx
   function Something() {
     const [count, setCount] = createState(0);
-    const hello = /* @__PURE__ */ h("div", null, () => "something");
-    hello.innerHTML += /* @__PURE__ */ h(
-      "p",
-      null,
-      () => "something else"
-    ).outerHTML;
-    return /* @__PURE__ */ h(
-      "div",
-      null,
-      () => /* @__PURE__ */ h("p", null, () => "count: ", count()),
-      () =>
-        /* @__PURE__ */ h(
-          "button",
-          {
-            onclick: () => setCount((c) => c + 1),
-          },
-          () => "increment"
-        ),
-      () =>
-        /* @__PURE__ */ h(
-          "a",
-          {
-            href: "/somewhere",
-          },
-          () => "somewhere"
-        ),
-      hello,
-      () =>
-        /* @__PURE__ */ h(Component, {
-          something: "hello",
-          yo: 3,
-        }),
-      () => /* @__PURE__ */ h("h1", null, () => "Yoyoyo"),
-      () => /* @__PURE__ */ h("p", null, () => "this is a test2"),
-      () => /* @__PURE__ */ h("p", null, () => "Hello"),
-      () => /* @__PURE__ */ h("h3", null, () => "gogo world "),
-      () =>
-        /* @__PURE__ */ h("div", null, () =>
-          /* @__PURE__ */ h(Fragment, null, () =>
-            /* @__PURE__ */ h("h1", null, () => "hello world")
-          )
-        ),
-      () =>
-        /* @__PURE__ */ h("input", {
-          id: "input",
-          name: "something",
-          value: "",
-          onchange: function (event) {
-            console.log(this.value);
-            console.log(event.currentTarget.value);
-          },
-        })
-    );
+    const hello = /* @__PURE__ */ h("div", null,() =>  "something");
+    hello.innerHTML += (/* @__PURE__ */ h("p", null,() =>  "something else")).outerHTML;
+    return /* @__PURE__ */ h("div", null,() =>  /* @__PURE__ */ h("p", null,() =>  "count: ", count()),() =>  /* @__PURE__ */ h("button", {
+      onclick: () => setCount((c) => c + 1)
+    },() =>  "increment"),() =>  /* @__PURE__ */ h("a", {
+      href: "/somewhere"
+    },() =>  "somewhere"), hello,() =>  /* @__PURE__ */ h(Component, {
+      something: "hello",
+      yo: 3
+    }),() =>  /* @__PURE__ */ h("h1", null,() =>  "Yoyoyo"),() =>  /* @__PURE__ */ h("p", null,() =>  "this is a test2"),() =>  /* @__PURE__ */ h("p", null,() =>  "Hello"),() =>  /* @__PURE__ */ h("h3", null,() =>  "gogo world "),() =>  /* @__PURE__ */ h("div", null,() =>  /* @__PURE__ */ h(Fragment, null,() =>  /* @__PURE__ */ h("h1", null,() =>  "hello world"))),() =>  /* @__PURE__ */ h("input", {
+      id: "input",
+      name: "something",
+      value: "",
+      onchange: function(event) {
+        console.log(this.value);
+        console.log(event.currentTarget.value);
+      }
+    }));
   }
   render(/* @__PURE__ */ h(Something, null), document.getElementById("root"));
 })();

@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "@ripened/runtime"
+    "dev": "ripened-run --dev"
   },
   "dependencies": {
     "@ripened/reactive": "^0.0.5",
