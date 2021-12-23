@@ -62,7 +62,7 @@ export const createDomElement: HFunction = function (
       if (Array.isArray(child)) {
         for (const c of child) {
           if (Array.isArray(c))
-            c.forEach((ce) => appendNode(ce, domNode, hasRendered));
+            c.forEach(ce => appendNode(ce, domNode, hasRendered));
           else appendNode(c, domNode, hasRendered);
         }
         continue;
@@ -101,7 +101,7 @@ function getChildren(childrenFn: ChildrenFn | Children) {
 
 function hasHtmlElements(child): boolean {
   if (Array.isArray(child)) {
-    if (child.some((c) => c instanceof HTMLElement)) return false;
+    if (child.some(c => c instanceof HTMLElement)) return false;
   }
   if (child instanceof HTMLElement) return false;
   return true;
@@ -117,7 +117,6 @@ function getDomNode(
   let domNode: HTMLElement | undefined;
   if (typeof element === "string") {
     domNode = document.createElement(element);
-    console.log(shouldGiveId, id, element, children);
     if (shouldGiveId) domNode.dataset.__id = String(id);
   } else {
     const p = props ? props : {};
@@ -148,7 +147,7 @@ function appendNode(
   if (Array.isArray(child)) {
     for (const c of child) {
       if (Array.isArray(c)) {
-        c.forEach((ce) => domNode.appendChild(ce));
+        c.forEach(ce => domNode.appendChild(ce));
       } else {
         if (c instanceof HTMLElement) domNode.appendChild(c);
         else textStrings.push(c);
@@ -160,7 +159,6 @@ function appendNode(
     const text = String(child);
     if (hasRendered) {
       domNode.innerText = text;
-      console.log(domNode.innerText, domNode.parentElement);
       return;
     }
     domNode.innerText = domNode.innerText ? domNode.innerText + text : text;
