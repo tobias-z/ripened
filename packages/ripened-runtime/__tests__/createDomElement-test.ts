@@ -1,4 +1,4 @@
-import { h } from "../jsx/h";
+import { createDomElement } from "../jsx/createDomElement";
 import { Fragment } from "../jsx/fragment";
 import { getDomNode, nodeWithChildren } from "./utils";
 
@@ -38,7 +38,7 @@ describe("components", function () {
     const A = (props: any) => getDomNode(Fragment, () => props.children);
     const B = () =>
       getDomNode("div", () =>
-        h(
+        createDomElement(
           A,
           null,
           () => getDomNode("h1"),

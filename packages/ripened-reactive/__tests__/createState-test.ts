@@ -1,4 +1,4 @@
-import { h } from "../../ripened-runtime/index";
+import { createDomElement } from "../../ripened-runtime/index";
 import { createState } from "../state/createState";
 
 describe("jsx", function () {
@@ -6,12 +6,12 @@ describe("jsx", function () {
     const [count, setCount] = createState(0);
     const theString = () => `text ${count()} and ${count()}`;
     document.body.appendChild(
-      h(
+      createDomElement(
         "div",
         null,
-        () => h("h2", null, "hello world"),
-        () => h("h1", { id: "hey" }, null),
-        () => h("p", { id: "yo" }, theString)
+        () => createDomElement("h2", null, "hello world"),
+        () => createDomElement("h1", { id: "hey" }, null),
+        () => createDomElement("p", { id: "yo" }, theString)
       ) as HTMLElement
     );
 

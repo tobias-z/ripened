@@ -1,3 +1,3 @@
 export * from "./jsx/render";
-export * from "./jsx/h";
+export * from "./jsx/createDomElement";
 export * from "./jsx/config";

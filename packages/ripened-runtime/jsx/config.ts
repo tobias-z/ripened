@@ -1,5 +1,5 @@
 class Config {
-  private static instance: Config;
+  private static _instance: Config;
 
   private _count: number;
   private readonly _callbacks: Map<number, (id: number) => void>;
@@ -10,10 +10,10 @@ class Config {
   }
 
   public static getInstance(): Config {
-    if (!Config.instance) {
-      Config.instance = new Config();
+    if (!Config._instance) {
+      Config._instance = new Config();
     }
-    return Config.instance;
+    return Config._instance;
   }
 
   public setNewId() {
@@ -38,6 +38,11 @@ class Config {
 
   public get callbacks(): Map<number, (id: number) => void> {
     return this._callbacks;
+  }
+
+  public getUniqueIdForNoneState() {
+    // TODO: Make better solution
+    return Math.random();
   }
 }
 

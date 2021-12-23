@@ -25,6 +25,7 @@ export function createState<T extends Object>(
         state = value;
       }
       const config = getConfig();
+      console.log(elementIds);
       for (const id of elementIds) {
         config.getCallback(id)?.(id);
       }

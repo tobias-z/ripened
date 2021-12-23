@@ -1,2 +1,2 @@
-export { h } from "../jsx/h";
+export { createDomElement } from "../jsx/createDomElement";
 export { Fragment } from "../jsx/fragment";

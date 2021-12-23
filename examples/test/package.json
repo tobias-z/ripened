@@ -7,8 +7,8 @@
     "dev": "ripened-run --dev"
   },
   "dependencies": {
-    "@ripened/reactive": "^0.0.5",
-    "@ripened/runtime": "^0.0.5"
+    "@ripened/reactive": "^0.0.7",
+    "@ripened/runtime": "^0.0.7"
   },
   "devDependencies": {
     "typescript": "^4.5.4"

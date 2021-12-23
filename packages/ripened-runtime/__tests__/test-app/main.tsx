@@ -1,24 +1,31 @@
+import "../../globals";
 import { render } from "../../jsx/render";
 import Component from "./something";
 import { createState } from "../../../ripened-reactive";
 
 function Something() {
   const [count, setCount] = createState(0);
-  const hello = <div>something</div>;
+  const hello = (
+    <div>
+      something yoyo {count()} <p>Yo </p>
+    </div>
+  );
 
-  hello.innerHTML += (<p>something else</p>).outerHTML;
+  hello.innerHTML += (<p>Hello world</p>).outerHTML;
 
   return (
     <div>
-      <p>count: {count()}</p>
-      <button onclick={() => setCount((c) => c + 1)}>increment</button>
+      <h3>
+        count: {count()} something {""} else
+      </h3>
+      <h3>{count()}</h3>
+      <button onclick={() => setCount(c => c + 1)}>increment</button>
       <a href="/somewhere">somewhere</a>
       {hello}
       <Component something="hello" yo={3} />
       <h1>Yoyoyo</h1>
       <p>this is a test2</p>
-      <p>Hello</p>
-      <h3>gogo world </h3>
+      <p style={{ padding: "1px", color: "black" }}>Hello</p>
       <div>
         <>
           <h1>hello world</h1>
@@ -33,6 +40,14 @@ function Something() {
           console.log(event.currentTarget.value);
         }}
       />
+      <h3>
+        <p>Hello world</p>
+        <p>Hello world</p>
+        <p>Hello world</p>
+        <p>Hello world</p>
+        <p>Hello world</p>
+        <p>Hello world</p>
+      </h3>
     </div>
   );
 }

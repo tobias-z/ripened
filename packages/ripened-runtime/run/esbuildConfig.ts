@@ -35,7 +35,7 @@ function run({ config, message }: { config: Config; message?: string }) {
       ? config.target
       : ["chrome58", "firefox57", "safari11", "edge18"],
     inject: [__dirname + "/slim.js"],
-    jsxFactory: "h",
+    jsxFactory: "createDomElement",
     jsxFragment: "Fragment",
     watch: isDev &&
       config.liveReload && {
@@ -73,26 +73,23 @@ function setCorrectFormatting(bundleFile: string) {
     }
 
     const result = data
-      .split("h(")
-      .map((item, idx) => {
-        const res = item.split(",").map((val, idx) => {
+      .split("createDomElement(")
+      .map(function (item, idx) {
+        if (idx === 0) return item;
+        const endOfHFunction = item.lastIndexOf(")") + 1;
+        const rest = item.substring(endOfHFunction);
+        const items = item.substring(0, endOfHFunction).split(",");
+        const res = items.map(function (val, i) {
+          if (val.includes("\n")) return val;
+          if (item[item.lastIndexOf(val) + val.length] === ";") return val;
           // TODO: Implement props as function
-          // if (idx === 1 && (val.trim() === "null" || val.startsWith(" {"))) {
-          //   if (val.startsWith(" {")) {
-          //     return `() => {
-          //       return ${val}
-          //     }`;
-          //   }
-          //   return "() => " + val;
-          // }
-          if (idx === 2 && (val.startsWith(' "') || val.startsWith(" '"))) {
+          if (i >= 2 && idx !== 0) {
             return "() => " + val;
           }
-          if (val.startsWith(" /* @__PURE__ */")) return "() => " + val;
           return val;
         });
-        if (idx === 0) return res.join(",");
-        return "h(" + res.join(",");
+        if (idx === 0) return res.join(",") + rest;
+        return "() => createDomElement(" + res.join(",") + rest;
       })
       .join("");
 
