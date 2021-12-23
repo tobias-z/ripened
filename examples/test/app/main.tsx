@@ -4,7 +4,7 @@ import { createState } from "@ripened/reactive";
 function App() {
   const [count, setCount] = createState(1);
 
-  const increment = () => setCount(c => c + 1);
+  const increment = () => setCount((c) => c + 1);
 
   return (
     <div>

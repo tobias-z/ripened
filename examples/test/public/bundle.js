@@ -41,13 +41,18 @@
     function createDomNode(id, hasRendered) {
       const alreadyCreated = document.querySelector(`[data-__id="${id}"]`);
       const children = getChildren(childrenFn);
-      const domNode = alreadyCreated ? alreadyCreated : getDomNode(element, id, props, children);
+      const domNode = alreadyCreated
+        ? alreadyCreated
+        : getDomNode(element, id, props, children);
       if (!domNode) {
-        const theChildren = children[0] ? children : props == null ? void 0 : props.children;
+        const theChildren = children[0]
+          ? children
+          : props == null
+          ? void 0
+          : props.children;
         return theChildren;
       }
-      if (Array.isArray(domNode))
-        return domNode;
+      if (Array.isArray(domNode)) return domNode;
       if (props && typeof element === "string") {
         for (const [key, value] of Object.entries(props)) {
           if (key === "style") {
@@ -63,8 +68,7 @@
           domNode[key] = value;
         }
       }
-      if (Array.isArray(children) && children.length === 0)
-        return domNode;
+      if (Array.isArray(children) && children.length === 0) return domNode;
       if (!Array.isArray(children)) {
         return domNode;
       }
@@ -73,8 +77,7 @@
           for (const c of child) {
             if (Array.isArray(c))
               c.forEach((ce) => appendNode(ce, domNode, hasRendered));
-            else
-              appendNode(c, domNode, hasRendered);
+            else appendNode(c, domNode, hasRendered);
           }
           continue;
         }
@@ -111,8 +114,7 @@
       domNode.dataset.__id = String(count);
     } else {
       const p = props ? props : {};
-      if (children)
-        p["children"] = children;
+      if (children) p["children"] = children;
       domNode = element(p);
     }
     return domNode;
@@ -153,12 +155,12 @@
     let state = initialState;
     const elementIds = /* @__PURE__ */ new Set();
     return [
-      function() {
+      function () {
         const config = getConfig();
         elementIds.add(config.count);
         return state;
       },
-      function(value) {
+      function (value) {
         var _a;
         if (typeof value === "function") {
           state = value(state);
@@ -170,7 +172,7 @@
         for (const id of elementIds) {
           (_a = config.getCallback(id)) == null ? void 0 : _a(id);
         }
-      }
+      },
     ];
   }
 
@@ -178,9 +180,22 @@
   function App() {
     const [count, setCount] = createState(1);
     const increment = () => setCount((c) => c + 1);
-    return /* @__PURE__ */ h("div", null,() =>  /* @__PURE__ */ h("div", null,() =>  /* @__PURE__ */ h("h1", {
-      onclick: increment
-    },() =>  "count: ", count())),() =>  /* @__PURE__ */ h("div", null,() =>  "Hello world"));
+    return /* @__PURE__ */ h(
+      "div",
+      null,
+      () =>
+        /* @__PURE__ */ h("div", null, () =>
+          /* @__PURE__ */ h(
+            "h1",
+            {
+              onclick: increment,
+            },
+            () => "count: ",
+            count()
+          )
+        ),
+      () => /* @__PURE__ */ h("div", null, () => "Hello world")
+    );
   }
   render(/* @__PURE__ */ h(App, null), document.getElementById("root"));
 })();

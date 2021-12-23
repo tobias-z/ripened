@@ -19,7 +19,7 @@ function Something() {
         count: {count()} something {""} else
       </h3>
       <h3>{count()}</h3>
-      <button onclick={() => setCount(c => c + 1)}>increment</button>
+      <button onclick={() => setCount((c) => c + 1)}>increment</button>
       <a href="/somewhere">somewhere</a>
       {hello}
       <Component something="hello" yo={3} />

@@ -1,5 +1,11 @@
 name: validate
 
+on:
+  push:
+    branches:
+      - "**"
+  pull_requests: {}
+
 jobs:
   main:
     # ignore all-contributors PRs
