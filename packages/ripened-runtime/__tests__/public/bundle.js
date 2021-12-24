@@ -65,6 +65,7 @@
         return domNode;
       }
       for (const child of children) {
+        console.log(child);
         if (Array.isArray(child)) {
           for (const c of child) {
             if (Array.isArray(c))
@@ -107,16 +108,17 @@
     return true;
   }
   function getDomNode(element, idStuff, props, children) {
+    var _a;
     const [shouldGiveId, id] = idStuff;
     let domNode;
     if (typeof element === "string") {
       domNode = document.createElement(element);
-      console.log(shouldGiveId, id, element, children);
       if (shouldGiveId) domNode.dataset.__id = String(id);
     } else {
-      const p = props ? props : {};
+      let p = {};
+      if (props && typeof props === "object") p = props;
       if (children) p["children"] = children;
-      domNode = element(p);
+      domNode = (_a = element(p)) == null ? void 0 : _a(p);
     }
     return domNode;
   }
@@ -139,8 +141,7 @@
     if (typeof child === "string" || typeof child === "number") {
       const text = String(child);
       if (hasRendered) {
-        domNode.innerText = text;
-        console.log(domNode.innerText, domNode.parentElement);
+        domNode.innerText += text;
         return;
       }
       domNode.innerText = domNode.innerText ? domNode.innerText + text : text;
@@ -175,7 +176,7 @@
 
   // jsx/render.ts
   function render(app, rootElement) {
-    rootElement.appendChild(app);
+    rootElement.appendChild(app()());
   }
 
   // __tests__/test-app/something.tsx
@@ -229,21 +230,26 @@
   // __tests__/test-app/main.tsx
   function Something() {
     const [count, setCount] = createState(0);
-    const hello = /* @__PURE__ */ () =>
-      createDomElement(
-        "div",
-        null,
-        () => "something yoyo ",
-        () => count(),
-        " ",
-        /* @__PURE__ */ () => createDomElement("p", null, "Yo ")
-      );
-    hello.innerHTML += /* @__PURE__ */ (() =>
-      createDomElement("p", null, () => "Hello world")).outerHTML;
     return /* @__PURE__ */ () =>
       createDomElement(
         "div",
         null,
+        /* @__PURE__ */ () => createDomElement("h1", null, () => "Yoyoyo"),
+        /* @__PURE__ */ () =>
+          createDomElement(Component, {
+            something: "hello",
+            yo: 3,
+          }),
+        /* @__PURE__ */ () =>
+          createDomElement("p", null, () => "this is a test2"),
+        /* @__PURE__ */ () =>
+          createDomElement(
+            "a",
+            {
+              href: "/somewhere",
+            },
+            () => "somewhere"
+          ),
         /* @__PURE__ */ () =>
           createDomElement(
             "h3",
@@ -254,7 +260,13 @@
             () => "",
             () => " else"
           ),
-        /* @__PURE__ */ () => createDomElement("h3", null, () => count()),
+        /* @__PURE__ */ () =>
+          createDomElement(
+            "h3",
+            null,
+            () => "count : ",
+            () => count()
+          ),
         /* @__PURE__ */ () =>
           createDomElement(
             "button",
@@ -263,23 +275,6 @@
             },
             () => "increment"
           ),
-        /* @__PURE__ */ () =>
-          createDomElement(
-            "a",
-            {
-              href: "/somewhere",
-            },
-            () => "somewhere"
-          ),
-        hello,
-        /* @__PURE__ */ () =>
-          createDomElement(Component, {
-            something: "hello",
-            yo: 3,
-          }),
-        /* @__PURE__ */ () => createDomElement("h1", null, () => "Yoyoyo"),
-        /* @__PURE__ */ () =>
-          createDomElement("p", null, () => "this is a test2"),
         /* @__PURE__ */ () =>
           createDomElement(
             "p",
@@ -329,7 +324,7 @@
       );
   }
   render(
-    /* @__PURE__ */ () => createDomElement(Something, null),
+    () => /* @__PURE__ */ () => createDomElement(Something, null),
     document.getElementById("root")
   );
 })();

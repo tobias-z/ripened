@@ -1,1 +1,3 @@
-export type Component = (props: Record<string, any>) => HTMLElement;
+export type Component = (
+  props?: Record<string, any>
+) => (props?: any) => HTMLElement;

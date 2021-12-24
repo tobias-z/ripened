@@ -58,7 +58,9 @@ export const createDomElement: HFunction = function (
       return domNode;
     }
 
+    // appendNode(children, domNode, hasRendered)
     for (const child of children) {
+      console.log(child);
       if (Array.isArray(child)) {
         for (const c of child) {
           if (Array.isArray(c))
@@ -119,9 +121,10 @@ function getDomNode(
     domNode = document.createElement(element);
     if (shouldGiveId) domNode.dataset.__id = String(id);
   } else {
-    const p = props ? props : {};
+    let p = {};
+    if (props && typeof props === "object") p = props;
     if (children) p["children"] = children;
-    domNode = element(p);
+    domNode = element(p)?.(p);
   }
   return domNode;
 }

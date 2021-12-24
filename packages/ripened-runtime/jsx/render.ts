@@ -1,3 +1,3 @@
-export function render(app: JSX.Element, rootElement: HTMLElement) {
-  rootElement.appendChild(app);
+export function render(app: () => any, rootElement: HTMLElement) {
+  rootElement.appendChild(app()());
 }
