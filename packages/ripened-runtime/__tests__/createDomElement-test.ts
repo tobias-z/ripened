@@ -5,7 +5,7 @@ import { getDomNode, nodeWithChildren } from "./utils";
 describe("default dom nodes", function () {
   test("h renders a dom node with text", function () {
     const text = "hello world";
-    const dom = getDomNode("h1", () => text);
+    const dom = getDomNode("h1", null, () => text);
     expect(dom.innerText).toEqual(text);
   });
 
@@ -21,6 +21,7 @@ describe("components", function () {
     const text = "hello world";
     const dom = getDomNode(
       () => Component,
+      null,
       () => text
     );
     expect(dom.innerText).toBe(text);
@@ -33,14 +34,14 @@ describe("components", function () {
 
   test("h puts fragment under domnode", function () {
     const Component = () => nodeWithChildren(Fragment, 3);
-    const dom = getDomNode("div", () => getDomNode(() => Component));
+    const dom = getDomNode("div", null, () => getDomNode(() => Component));
     expect(dom.childElementCount).toBe(3);
   });
 
   test("component can render other components", function () {
-    const A = (props: any) => getDomNode(Fragment, () => props.children);
+    const A = (props: any) => getDomNode(Fragment, null, () => props.children);
     const B = () =>
-      getDomNode("div", () =>
+      getDomNode("div", null, () =>
         createDomElement(
           () => A,
           null,
@@ -48,7 +49,7 @@ describe("components", function () {
           () => getDomNode("h1")
         )
       );
-    const dom = getDomNode("div", () => getDomNode(() => B));
+    const dom = getDomNode("div", null, () => getDomNode(() => B));
     // <div><div>
     //    <h1></h1><h1></h1>
     // </div></div>

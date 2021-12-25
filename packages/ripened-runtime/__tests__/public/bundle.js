@@ -14,8 +14,13 @@
     setNewId() {
       this._count++;
     }
-    assignCallback(cb) {
-      this._callbacks.set(this._count, cb);
+    assignCallback(cb, id = this._count) {
+      const callbacks = this._callbacks.has(id) ? this._callbacks.get(id) : [];
+      callbacks.push(cb);
+      this._callbacks.set(id, callbacks);
+    }
+    removeCallback(id) {
+      this._callbacks.delete(id);
     }
     getCallback(id) {
       return this._callbacks.get(id);
@@ -36,51 +41,42 @@
   var getConfig = () => Config.getInstance();
 
   // ../../build/@ripened/runtime/jsx/createDomElement.js
-  var createDomElement = function (element, props, ...childrenFn) {
+  var createDomElement = (element, props, ...childrenFn) => {
     const config = getConfig();
     config.setNewId();
-    config.assignCallback((id) => createDomNode(id, true));
-    return createDomNode(void 0, false);
-    function createDomNode(id, hasRendered) {
+    config.assignCallback((id) => createDomNode(id));
+    return createDomNode(void 0);
+    function createDomNode(id) {
       let alreadyCreated;
-      if (id) alreadyCreated = document.querySelector(`[data-__id="${id}"]`);
-      const [children, isTextChildren] = getChildren(childrenFn);
-      const domNode = alreadyCreated
-        ? alreadyCreated
-        : getDomNode(element, [isTextChildren, config.count], props, children);
+      if (id)
+        alreadyCreated = document.querySelector(`[data-__id="${id}"]`);
+      const count = config.count;
+      const [children, isTextChildren, isMappedData] = getChildren(childrenFn);
+      const domNode = alreadyCreated ? alreadyCreated : getDomNode(element, [isTextChildren || isMappedData, count], props, children);
       if (!domNode) {
-        const theChildren = children[0]
-          ? children
-          : props == null
-          ? void 0
-          : props.children;
+        const theChildren = children[0] ? children : props == null ? void 0 : props.children;
         return theChildren;
       }
-      if (Array.isArray(domNode)) return domNode;
+      if (alreadyCreated && domNode.hasChildNodes())
+        removeAllChildNodes(domNode);
+      if (Array.isArray(domNode))
+        return domNode;
       if (props && typeof element === "string") {
         setProperties(props, domNode);
       }
-      if (Array.isArray(children) && children.length === 0) return domNode;
+      if (Array.isArray(children) && children.length === 0)
+        return domNode;
       if (!Array.isArray(children)) {
         return domNode;
       }
-      for (const child of children) {
-        console.log(child);
-        if (Array.isArray(child)) {
-          for (const c of child) {
-            if (Array.isArray(c))
-              c.forEach((ce) => appendNode(ce, domNode, hasRendered));
-            else appendNode(c, domNode, hasRendered);
-          }
-          continue;
-        }
-        appendNode(child, domNode, hasRendered);
-      }
+      appendNode(children, domNode);
       return domNode;
     }
   };
   function getChildren(childrenFn) {
+    console.log(childrenFn);
     const children = [];
+    let isMappedData = false;
     for (const child of childrenFn) {
       if (Array.isArray(child)) {
         for (const c of child) {
@@ -93,19 +89,22 @@
         continue;
       }
       if (typeof child === "function") {
-        children.push(child());
+        let c = child();
+        if (Array.isArray(c)) {
+          for (const ce of c) {
+            if (typeof ce !== "function")
+              continue;
+            isMappedData = true;
+            children.push(ce());
+          }
+          continue;
+        }
+        children.push(c);
         continue;
       }
       children.push(child);
     }
-    return [children, children.some(hasHtmlElements)];
-  }
-  function hasHtmlElements(child) {
-    if (Array.isArray(child)) {
-      if (child.some((c) => c instanceof HTMLElement)) return false;
-    }
-    if (child instanceof HTMLElement) return false;
-    return true;
+    return [children, children.some(hasHtmlElements), isMappedData];
   }
   function getDomNode(element, idStuff, props, children) {
     var _a;
@@ -113,45 +112,38 @@
     let domNode;
     if (typeof element === "string") {
       domNode = document.createElement(element);
-      if (shouldGiveId) domNode.dataset.__id = String(id);
+      if (shouldGiveId)
+        domNode.dataset.__id = String(id);
     } else {
       let p = {};
-      if (props && typeof props === "object") p = props;
-      if (children) p["children"] = children;
+      if (props && typeof props === "object")
+        p = props;
+      if (children)
+        p["children"] = children;
       domNode = (_a = element(p)) == null ? void 0 : _a(p);
     }
     return domNode;
   }
-  function appendNode(child, domNode, hasRendered) {
-    if (child instanceof Node) {
-      domNode.appendChild(child);
-      return;
-    }
+  function appendNode(child, domNode) {
     const textStrings = [];
-    if (Array.isArray(child)) {
-      for (const c of child) {
-        if (Array.isArray(c)) {
-          c.forEach((ce) => domNode.appendChild(ce));
-        } else {
-          if (c instanceof HTMLElement) domNode.appendChild(c);
-          else textStrings.push(c);
+    for (const c of child) {
+      if (Array.isArray(c)) {
+        for (const ce of c) {
+          if (Array.isArray(ce)) {
+            ce.forEach((c2) => domNode.appendChild(c2));
+            continue;
+          }
+          domNode.appendChild(ce);
         }
+        continue;
       }
+      if (c instanceof HTMLElement) {
+        domNode.appendChild(c);
+      } else
+        textStrings.push(c);
     }
-    if (typeof child === "string" || typeof child === "number") {
-      const text = String(child);
-      if (hasRendered) {
-        domNode.innerText += text;
-        return;
-      }
-      domNode.innerText = domNode.innerText ? domNode.innerText + text : text;
-      return;
-    }
-    let textToUse = hasRendered ? domNode.innerText : "";
-    for (const text in textStrings) {
-      textToUse += text;
-    }
-    domNode.innerText = textToUse;
+    if (textStrings.length > 0)
+      domNode.innerText = textStrings.join("");
   }
   function setProperties(props, domNode) {
     for (const [key, value] of Object.entries(props)) {
@@ -168,6 +160,20 @@
       domNode[key] = value;
     }
   }
+  function removeAllChildNodes(parent) {
+    while (parent.firstChild) {
+      parent.removeChild(parent.firstChild);
+    }
+  }
+  function hasHtmlElements(child) {
+    if (Array.isArray(child)) {
+      if (child.some((c) => c instanceof HTMLElement))
+        return false;
+    }
+    if (child instanceof HTMLElement)
+      return false;
+    return true;
+  }
 
   // ../../build/@ripened/runtime/jsx/fragment.js
   function Fragment() {
@@ -176,28 +182,12 @@
 
   // jsx/render.ts
   function render(app, rootElement) {
-    rootElement.appendChild(app()());
+    rootElement.appendChild(app());
   }
 
   // __tests__/test-app/something.tsx
   function Component({ something }) {
-    return /* @__PURE__ */ () =>
-      createDomElement(
-        Fragment,
-        null,
-        /* @__PURE__ */ () =>
-          createDomElement(
-            "p",
-            null,
-            () => "xxx xd ",
-            () => something,
-            () => " hello worldd ",
-            () => 12 + 2
-          ),
-        /* @__PURE__ */ () =>
-          createDomElement("h1", null, () => "Hello world yoyo test2dsadasdsa"),
-        /* @__PURE__ */ () => createDomElement("p", null, "sup")
-      );
+    return /* @__PURE__ */ () => createDomElement(Fragment, null, /* @__PURE__ */ () => createDomElement("p", null,() =>  "xxx xd ",() =>  something,() =>  " hello worldd ",() =>  12 + 2), /* @__PURE__ */ () => createDomElement("h1", null,() =>  "Hello world yoyo test2dsadasdsa"), /* @__PURE__ */ () => createDomElement("p", null, "sup"));
   }
 
   // ../ripened-reactive/state/createState.ts
@@ -205,12 +195,12 @@
     let state = initialState;
     const elementIds = /* @__PURE__ */ new Set();
     return [
-      function () {
+      function() {
         const config = getConfig();
         elementIds.add(config.count);
         return state;
       },
-      function (value) {
+      function(value) {
         var _a;
         if (typeof value === "function") {
           state = value(state);
@@ -221,110 +211,36 @@
         const config = getConfig();
         console.log(elementIds);
         for (const id of elementIds) {
-          (_a = config.getCallback(id)) == null ? void 0 : _a(id);
+          (_a = config.getCallback(id)) == null ? void 0 : _a.forEach((cb) => cb(id));
         }
-      },
+      }
     ];
   }
 
   // __tests__/test-app/main.tsx
   function Something() {
     const [count, setCount] = createState(0);
-    return /* @__PURE__ */ () =>
-      createDomElement(
-        "div",
-        null,
-        /* @__PURE__ */ () => createDomElement("h1", null, () => "Yoyoyo"),
-        /* @__PURE__ */ () =>
-          createDomElement(Component, {
-            something: "hello",
-            yo: 3,
-          }),
-        /* @__PURE__ */ () =>
-          createDomElement("p", null, () => "this is a test2"),
-        /* @__PURE__ */ () =>
-          createDomElement(
-            "a",
-            {
-              href: "/somewhere",
-            },
-            () => "somewhere"
-          ),
-        /* @__PURE__ */ () =>
-          createDomElement(
-            "h3",
-            null,
-            () => "count: ",
-            () => count(),
-            () => " something ",
-            () => "",
-            () => " else"
-          ),
-        /* @__PURE__ */ () =>
-          createDomElement(
-            "h3",
-            null,
-            () => "count : ",
-            () => count()
-          ),
-        /* @__PURE__ */ () =>
-          createDomElement(
-            "button",
-            {
-              onclick: () => setCount((c) => c + 1),
-            },
-            () => "increment"
-          ),
-        /* @__PURE__ */ () =>
-          createDomElement(
-            "p",
-            {
-              style: { padding: "1px", color: "black" },
-            },
-            () => "Hello"
-          ),
-        /* @__PURE__ */ () =>
-          createDomElement(
-            "div",
-            null,
-            /* @__PURE__ */ () =>
-              createDomElement(
-                Fragment,
-                null,
-                /* @__PURE__ */ () =>
-                  createDomElement("h1", null, () => "hello world")
-              )
-          ),
-        /* @__PURE__ */ () =>
-          createDomElement("input", {
-            id: "input",
-            name: "something",
-            value: "",
-            onchange: function (event) {
-              console.log(this.value);
-              console.log(event.currentTarget.value);
-            },
-          }),
-        /* @__PURE__ */ () =>
-          createDomElement(
-            "h3",
-            null,
-            /* @__PURE__ */ () =>
-              createDomElement("p", null, () => "Hello world"),
-            /* @__PURE__ */ () =>
-              createDomElement("p", null, () => "Hello world"),
-            /* @__PURE__ */ () =>
-              createDomElement("p", null, () => "Hello world"),
-            /* @__PURE__ */ () =>
-              createDomElement("p", null, () => "Hello world"),
-            /* @__PURE__ */ () =>
-              createDomElement("p", null, () => "Hello world"),
-            /* @__PURE__ */ () => createDomElement("p", null, "Hello world")
-          )
-      );
+    const [items, setItems] = createState([15]);
+    return /* @__PURE__ */ () => createDomElement("div", null, /* @__PURE__ */ () => createDomElement("h1", null,() =>  "Yoyoyo"), /* @__PURE__ */ () => createDomElement(Component, {
+      something: "hello",
+      yo: 3
+    }), /* @__PURE__ */ () => createDomElement("p", null,() =>  "this is a test2"), /* @__PURE__ */ () => createDomElement("a", {
+      href: "/somewhere"
+    },() =>  "somewhere"), /* @__PURE__ */ () => createDomElement("ul", null, /* @__PURE__ */ () => createDomElement("li", null,() =>  "Hello world"),() =>  items().map((item) => /* @__PURE__ */ () => createDomElement("li", null,() =>  item)), /* @__PURE__ */ () => createDomElement("li", null,() =>  "Hello world")), /* @__PURE__ */ () => createDomElement("button", {
+      onclick: () => setItems([...items(), items().length + 1])
+    },() =>  "add item"), /* @__PURE__ */ () => createDomElement("h3", null,() =>  "count: ",() =>  count(),() =>  " something else"), /* @__PURE__ */ () => createDomElement("h3", null,() =>  "count : ",() =>  count()), /* @__PURE__ */ () => createDomElement("button", {
+      onclick: () => setCount((c) => c + 1)
+    },() =>  "increment"), /* @__PURE__ */ () => createDomElement("p", {
+      style: { padding: "1px", color: "black" }
+    },() =>  "Hello"), /* @__PURE__ */ () => createDomElement("div", null, /* @__PURE__ */ () => createDomElement(Fragment, null, /* @__PURE__ */ () => createDomElement("h1", null,() =>  "hello world"))), /* @__PURE__ */ () => createDomElement("input", {
+      id: "input",
+      name: "something",
+      value: "",
+      onchange: function(event) {
+        console.log(this.value);
+        console.log(event.currentTarget.value);
+      }
+    }), /* @__PURE__ */ () => createDomElement("h3", null, /* @__PURE__ */ () => createDomElement("p", null,() =>  "Hello world"), /* @__PURE__ */ () => createDomElement("p", null,() =>  "Hello world"), /* @__PURE__ */ () => createDomElement("p", null,() =>  "Hello world"), /* @__PURE__ */ () => createDomElement("p", null,() =>  "Hello world"), /* @__PURE__ */ () => createDomElement("p", null,() =>  "Hello world"), /* @__PURE__ */ () => createDomElement("p", null, "Hello world")));
   }
-  render(
-    () => /* @__PURE__ */ () => createDomElement(Something, null),
-    document.getElementById("root")
-  );
+  render(/* @__PURE__ */ () => createDomElement(Something, null), document.getElementById("root"));
 })();

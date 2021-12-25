@@ -1,4 +1,5 @@
 import { createDomElement } from "../../ripened-runtime/index";
+import { getDomNode } from "../../ripened-runtime/__tests__/utils";
 import { createState } from "../state/createState";
 
 describe("jsx", function () {
@@ -9,9 +10,9 @@ describe("jsx", function () {
       createDomElement(
         "div",
         null,
-        () => createDomElement("h2", null, "hello world"),
-        () => createDomElement("h1", { id: "hey" }, null),
-        () => createDomElement("p", { id: "yo" }, theString)
+        () => getDomNode("h2", null, "hello world"),
+        () => getDomNode("h1", { id: "hey" }, null),
+        () => getDomNode("p", { id: "yo" }, theString)
       ) as HTMLElement
     );
 

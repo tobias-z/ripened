@@ -4,9 +4,10 @@ import { type Component } from "../types/h";
 
 export function getDomNode(
   element: string | Component | FragmentFunction = "h1",
+  props: any = {},
   ...children: any
 ) {
-  return createDomElement(element, null, children) as HTMLElement;
+  return createDomElement(element, props, children) as HTMLElement;
 }
 
 export function nodeWithChildren(node: string | Component, childCount: number) {

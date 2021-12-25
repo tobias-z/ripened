@@ -5,6 +5,7 @@ import { createState } from "../../../ripened-reactive";
 
 function Something() {
   const [count, setCount] = createState(0);
+  const [items, setItems] = createState([15]);
 
   return (
     <div>
@@ -12,11 +13,19 @@ function Something() {
       <Component something="hello" yo={3} />
       <p>this is a test2</p>
       <a href="/somewhere">somewhere</a>
-      <h3>
-        count: {count()} something {""} else
-      </h3>
+      <ul>
+        <li>Hello world</li>
+        {items().map(item => (
+          <li>{item}</li>
+        ))}
+        <li>Hello world</li>
+      </ul>
+      <button onclick={() => setItems([...items(), items().length + 1])}>
+        add item
+      </button>
+      <h3>count: {count()} something else</h3>
       <h3>count : {count()}</h3>
-      <button onclick={() => setCount((c) => c + 1)}>increment</button>
+      <button onclick={() => setCount(c => c + 1)}>increment</button>
       <p style={{ padding: "1px", color: "black" }}>Hello</p>
       <div>
         <>
@@ -44,4 +53,4 @@ function Something() {
   );
 }
 
-render(() => <Something />, document.getElementById("root"));
+render(<Something />, document.getElementById("root"));

@@ -7,9 +7,10 @@ type Props = Record<string, any> | null;
 
 // TODO: There has to be a better way?
 type Children = string[] | HTMLElement[] | string[][] | HTMLElement[][];
-type ReturnedChildren = string | HTMLElement | string[] | HTMLElement[];
+type ReturnedChildren = string | number | HTMLElement | HTMLElement[];
 type ChildrenFn =
   | Array<() => ReturnedChildren>
+  | Array<() => Array<() => ReturnedChildren>>
   | Array<Array<() => ReturnedChildren>>;
 
 type HFunction = (
@@ -18,33 +19,43 @@ type HFunction = (
   ...children: ChildrenFn | Children
 ) => HTMLElement | HTMLElement[] | string[];
 
-export const createDomElement: HFunction = function (
-  element,
-  props,
-  ...childrenFn
-) {
+export const createDomElement: HFunction = (element, props, ...childrenFn) => {
   const config = getConfig();
   config.setNewId();
-  config.assignCallback((id: number) => createDomNode(id, true));
-  return createDomNode(undefined, false);
+  config.assignCallback((id: number) => createDomNode(id));
+  return createDomNode(undefined);
 
-  function createDomNode(id: number | undefined, hasRendered: boolean) {
+  function createDomNode(id: number | undefined) {
     let alreadyCreated: HTMLElement | undefined;
     if (id)
       alreadyCreated = document.querySelector(
         `[data-__id="${id}"]`
       ) as HTMLElement;
-    const [children, isTextChildren]: [ReturnedChildren[], boolean] =
-      getChildren(childrenFn);
+
+    // we have to cache count here because getChildren might increment it
+    const count = config.count;
+
+    const [children, isTextChildren, isMappedData]: [
+      ReturnedChildren[],
+      boolean,
+      boolean
+    ] = getChildren(childrenFn);
 
     const domNode: HTMLElement | undefined | HTMLElement[] = alreadyCreated
       ? alreadyCreated
-      : getDomNode(element, [isTextChildren, config.count], props, children);
+      : getDomNode(
+          element,
+          [isTextChildren || isMappedData, count],
+          props,
+          children
+        );
 
     if (!domNode) {
       const theChildren = children[0] ? children : props?.children;
       return theChildren as HTMLElement[];
     }
+
+    if (alreadyCreated && domNode.hasChildNodes()) removeAllChildNodes(domNode);
 
     if (Array.isArray(domNode)) return domNode;
 
@@ -58,26 +69,16 @@ export const createDomElement: HFunction = function (
       return domNode;
     }
 
-    // appendNode(children, domNode, hasRendered)
-    for (const child of children) {
-      console.log(child);
-      if (Array.isArray(child)) {
-        for (const c of child) {
-          if (Array.isArray(c))
-            c.forEach((ce) => appendNode(ce, domNode, hasRendered));
-          else appendNode(c, domNode, hasRendered);
-        }
-        continue;
-      }
-      appendNode(child, domNode, hasRendered);
-    }
+    appendNode(children, domNode);
 
     return domNode;
   }
 };
 
 function getChildren(childrenFn: ChildrenFn | Children) {
+  console.log(childrenFn);
   const children: ReturnedChildren[] = [];
+  let isMappedData = false;
   for (const child of childrenFn) {
     if (Array.isArray(child)) {
       for (const c of child) {
@@ -90,23 +91,25 @@ function getChildren(childrenFn: ChildrenFn | Children) {
       continue;
     }
     if (typeof child === "function") {
-      children.push(child());
+      let c = child();
+      if (Array.isArray(c)) {
+        for (const ce of c) {
+          if (typeof ce !== "function") continue;
+          isMappedData = true;
+          children.push(ce());
+        }
+        continue;
+      }
+      children.push(c);
       continue;
     }
     children.push(child);
   }
-  return [children, children.some(hasHtmlElements)] as [
+  return [children, children.some(hasHtmlElements), isMappedData] as [
     ReturnedChildren[],
+    boolean,
     boolean
   ];
-}
-
-function hasHtmlElements(child): boolean {
-  if (Array.isArray(child)) {
-    if (child.some((c) => c instanceof HTMLElement)) return false;
-  }
-  if (child instanceof HTMLElement) return false;
-  return true;
 }
 
 function getDomNode(
@@ -129,51 +132,26 @@ function getDomNode(
   return domNode;
 }
 
-function appendNode(
-  child:
-    | string
-    | string[]
-    | number
-    | number[]
-    | HTMLElement
-    | HTMLElement[]
-    | HTMLElement[][],
-  domNode: HTMLElement,
-  hasRendered: boolean
-) {
-  if (child instanceof Node) {
-    domNode.appendChild(child);
-    return;
-  }
-
+function appendNode(child: ReturnedChildren[], domNode: HTMLElement) {
   const textStrings: Array<string | number> = [];
-  if (Array.isArray(child)) {
-    for (const c of child) {
-      if (Array.isArray(c)) {
-        c.forEach((ce) => domNode.appendChild(ce));
-      } else {
-        if (c instanceof HTMLElement) domNode.appendChild(c);
-        else textStrings.push(c);
+  for (const c of child) {
+    if (Array.isArray(c)) {
+      for (const ce of c) {
+        if (Array.isArray(ce)) {
+          ce.forEach(c => domNode.appendChild(c));
+          continue;
+        }
+
+        domNode.appendChild(ce);
       }
+      continue;
     }
+    if (c instanceof HTMLElement) {
+      domNode.appendChild(c);
+    } else textStrings.push(c);
   }
 
-  if (typeof child === "string" || typeof child === "number") {
-    const text = String(child);
-    if (hasRendered) {
-      domNode.innerText = text;
-      return;
-    }
-    domNode.innerText = domNode.innerText ? domNode.innerText + text : text;
-    return;
-  }
-
-  let textToUse = hasRendered ? domNode.innerText : "";
-  for (const text in textStrings) {
-    textToUse += text;
-  }
-
-  domNode.innerText = textToUse;
+  if (textStrings.length > 0) domNode.innerText = textStrings.join("");
 }
 
 function setProperties(props: Record<string, any>, domNode: HTMLElement) {
@@ -190,4 +168,20 @@ function setProperties(props: Record<string, any>, domNode: HTMLElement) {
     }
     domNode[key] = value;
   }
+}
+
+// --- Utils ---
+
+function removeAllChildNodes(parent: HTMLElement) {
+  while (parent.firstChild) {
+    parent.removeChild(parent.firstChild);
+  }
+}
+
+function hasHtmlElements(child): boolean {
+  if (Array.isArray(child)) {
+    if (child.some(c => c instanceof HTMLElement)) return false;
+  }
+  if (child instanceof HTMLElement) return false;
+  return true;
 }

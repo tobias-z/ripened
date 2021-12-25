@@ -27,7 +27,7 @@ export function createState<T extends Object>(
       const config = getConfig();
       console.log(elementIds);
       for (const id of elementIds) {
-        config.getCallback(id)?.(id);
+        config.getCallback(id)?.forEach(cb => cb(id));
       }
     },
   ] as [Getter<T>, Setter<T>];

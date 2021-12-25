@@ -2,7 +2,7 @@ class Config {
   private static _instance: Config;
 
   private _count: number;
-  private readonly _callbacks: Map<number, (id: number) => void>;
+  private readonly _callbacks: Map<number, Array<(id: number) => void>>;
 
   private constructor() {
     this._count = 0;
@@ -20,8 +20,14 @@ class Config {
     this._count++;
   }
 
-  public assignCallback(cb: (id: number) => void) {
-    this._callbacks.set(this._count, cb);
+  public assignCallback(cb: (id: number) => void, id: number = this._count) {
+    const callbacks = this._callbacks.has(id) ? this._callbacks.get(id) : [];
+    callbacks!.push(cb);
+    this._callbacks.set(id, callbacks!);
+  }
+
+  public removeCallback(id: number) {
+    this._callbacks.delete(id);
   }
 
   public getCallback(id: number) {
@@ -36,7 +42,7 @@ class Config {
     return this._count;
   }
 
-  public get callbacks(): Map<number, (id: number) => void> {
+  public get callbacks(): Map<number, Array<(id: number) => void>> {
     return this._callbacks;
   }
 

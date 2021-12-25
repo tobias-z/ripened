@@ -14,11 +14,10 @@ declare global {
       T,
       {
         class: string;
-        children: HTMLElement[] | HTMLElement | string;
+        children: any;
         style: Partial<CSSStyleDeclaration>;
         oninput: EventFunction<T>;
         onchange: EventFunction<T>;
-        __something: string;
       }
     >
   >;
