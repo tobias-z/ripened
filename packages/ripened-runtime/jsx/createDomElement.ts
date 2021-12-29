@@ -11,6 +11,7 @@ type ReturnedChildren = string | number | HTMLElement | HTMLElement[];
 type ChildrenFn =
   | Array<() => ReturnedChildren>
   | Array<() => Array<() => ReturnedChildren>>
+  | Array<() => () => ReturnedChildren>
   | Array<Array<() => ReturnedChildren>>;
 
 type HFunction = (
@@ -19,13 +20,18 @@ type HFunction = (
   ...children: ChildrenFn | Children
 ) => HTMLElement | HTMLElement[] | string[];
 
-export const createDomElement: HFunction = (element, props, ...childrenFn) => {
+export const createDomElement: HFunction = function (
+  element,
+  props,
+  ...childrenFn
+) {
   const config = getConfig();
   config.setNewId();
-  config.assignCallback((id: number) => createDomNode(id));
+  config.addObservable((id: number) => createDomNode(id));
   return createDomNode(undefined);
 
   function createDomNode(id: number | undefined) {
+    // TODO: Move config to return the html element
     let alreadyCreated: HTMLElement | undefined;
     if (id)
       alreadyCreated = document.querySelector(
@@ -33,7 +39,7 @@ export const createDomElement: HFunction = (element, props, ...childrenFn) => {
       ) as HTMLElement;
 
     // we have to cache count here because getChildren might increment it
-    const count = config.count;
+    const count = id ? id : config.count;
 
     const [children, isTextChildren, isMappedData]: [
       ReturnedChildren[],
@@ -76,7 +82,6 @@ export const createDomElement: HFunction = (element, props, ...childrenFn) => {
 };
 
 function getChildren(childrenFn: ChildrenFn | Children) {
-  console.log(childrenFn);
   const children: ReturnedChildren[] = [];
   let isMappedData = false;
   for (const child of childrenFn) {
@@ -98,6 +103,11 @@ function getChildren(childrenFn: ChildrenFn | Children) {
           isMappedData = true;
           children.push(ce());
         }
+        continue;
+      }
+      if (typeof c === "function") {
+        getConfig().delayIncrement();
+        children.push(c());
         continue;
       }
       children.push(c);

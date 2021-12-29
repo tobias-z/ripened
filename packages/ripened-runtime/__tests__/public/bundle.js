@@ -3,7 +3,8 @@
   var Config = class {
     constructor() {
       this._count = 0;
-      this._callbacks = /* @__PURE__ */ new Map();
+      this._properties = /* @__PURE__ */ new Map();
+      this._shouldIncrement = true;
     }
     static getInstance() {
       if (!Config._instance) {
@@ -12,47 +13,54 @@
       return Config._instance;
     }
     setNewId() {
-      this._count++;
+      if (this._shouldIncrement)
+        this._count++;
+      else
+        this._shouldIncrement = true;
     }
-    assignCallback(cb, id = this._count) {
-      const callbacks = this._callbacks.has(id) ? this._callbacks.get(id) : [];
-      callbacks.push(cb);
-      this._callbacks.set(id, callbacks);
+    delayIncrement() {
+      this._shouldIncrement = false;
     }
-    removeCallback(id) {
-      this._callbacks.delete(id);
+    addObservable(cb, id = this._count) {
+      const callbacks = this._properties.has(id) ? this._properties.get(id) : {
+        element: null,
+        observables: /* @__PURE__ */ new Set()
+      };
+      callbacks.observables.add(cb);
+      this._properties.set(id, callbacks);
     }
-    getCallback(id) {
-      return this._callbacks.get(id);
+    removeObservable(observable, id = this._count) {
+      if (!this._properties.has(id))
+        return;
+      const property = this._properties.get(id);
+      property.observables.delete(observable);
     }
-    getActiveCallback() {
-      return this._callbacks.get(this._count);
+    notify(id) {
+      var _a;
+      (_a = this.getObservable(id)) == null ? void 0 : _a.observables.forEach((cb) => cb(id));
+    }
+    getObservable(id) {
+      return this._properties.get(id);
     }
     get count() {
       return this._count;
-    }
-    get callbacks() {
-      return this._callbacks;
-    }
-    getUniqueIdForNoneState() {
-      return Math.random();
     }
   };
   var getConfig = () => Config.getInstance();
 
   // ../../build/@ripened/runtime/jsx/createDomElement.js
-  var createDomElement = (element, props, ...childrenFn) => {
+  var createDomElement = function(element, props, ...childrenFn) {
     const config = getConfig();
     config.setNewId();
-    config.assignCallback((id) => createDomNode(id));
+    config.addObservable((id) => createDomNode(id));
     return createDomNode(void 0);
     function createDomNode(id) {
       let alreadyCreated;
       if (id)
         alreadyCreated = document.querySelector(`[data-__id="${id}"]`);
-      const count = config.count;
+      const count2 = id ? id : config.count;
       const [children, isTextChildren, isMappedData] = getChildren(childrenFn);
-      const domNode = alreadyCreated ? alreadyCreated : getDomNode(element, [isTextChildren || isMappedData, count], props, children);
+      const domNode = alreadyCreated ? alreadyCreated : getDomNode(element, [isTextChildren || isMappedData, count2], props, children);
       if (!domNode) {
         const theChildren = children[0] ? children : props == null ? void 0 : props.children;
         return theChildren;
@@ -74,7 +82,6 @@
     }
   };
   function getChildren(childrenFn) {
-    console.log(childrenFn);
     const children = [];
     let isMappedData = false;
     for (const child of childrenFn) {
@@ -97,6 +104,11 @@
             isMappedData = true;
             children.push(ce());
           }
+          continue;
+        }
+        if (typeof c === "function") {
+          getConfig().delayIncrement();
+          children.push(c());
           continue;
         }
         children.push(c);
@@ -201,7 +213,6 @@
         return state;
       },
       function(value) {
-        var _a;
         if (typeof value === "function") {
           state = value(state);
         }
@@ -211,36 +222,38 @@
         const config = getConfig();
         console.log(elementIds);
         for (const id of elementIds) {
-          (_a = config.getCallback(id)) == null ? void 0 : _a.forEach((cb) => cb(id));
+          config.notify(id);
         }
       }
     ];
   }
 
   // __tests__/test-app/main.tsx
+  var [count, setCount] = createState(0);
+  var [items, setItems] = createState([15]);
+  var [isLoading, setIsLoading] = createState(true);
   function Something() {
-    const [count, setCount] = createState(0);
-    const [items, setItems] = createState([15]);
-    return /* @__PURE__ */ () => createDomElement("div", null, /* @__PURE__ */ () => createDomElement("h1", null,() =>  "Yoyoyo"), /* @__PURE__ */ () => createDomElement(Component, {
+    setTimeout(() => setIsLoading(false), 2e3);
+    return /* @__PURE__ */ () => createDomElement("div", null, /* @__PURE__ */ () => createDomElement("h1", null,() =>  "Yoyoyo"),() =>  isLoading() ? /* @__PURE__ */ () => createDomElement("p", null,() =>  "Loading") : /* @__PURE__ */ () => createDomElement("p", null,() =>  "Finished loading"), /* @__PURE__ */ () => createDomElement(Component, {
       something: "hello",
       yo: 3
     }), /* @__PURE__ */ () => createDomElement("p", null,() =>  "this is a test2"), /* @__PURE__ */ () => createDomElement("a", {
       href: "/somewhere"
     },() =>  "somewhere"), /* @__PURE__ */ () => createDomElement("ul", null, /* @__PURE__ */ () => createDomElement("li", null,() =>  "Hello world"),() =>  items().map((item) => /* @__PURE__ */ () => createDomElement("li", null,() =>  item)), /* @__PURE__ */ () => createDomElement("li", null,() =>  "Hello world")), /* @__PURE__ */ () => createDomElement("button", {
       onclick: () => setItems([...items(), items().length + 1])
-    },() =>  "add item"), /* @__PURE__ */ () => createDomElement("h3", null,() =>  "count: ",() =>  count(),() =>  " something else"), /* @__PURE__ */ () => createDomElement("h3", null,() =>  "count : ",() =>  count()), /* @__PURE__ */ () => createDomElement("button", {
+    },() =>  "add item"), /* @__PURE__ */ () => createDomElement("h3", null,() =>  "count: ",() =>  count(),() =>  " something else"), /* @__PURE__ */ () => createDomElement("button", {
       onclick: () => setCount((c) => c + 1)
     },() =>  "increment"), /* @__PURE__ */ () => createDomElement("p", {
       style: { padding: "1px", color: "black" }
-    },() =>  "Hello"), /* @__PURE__ */ () => createDomElement("div", null, /* @__PURE__ */ () => createDomElement(Fragment, null, /* @__PURE__ */ () => createDomElement("h1", null,() =>  "hello world"))), /* @__PURE__ */ () => createDomElement("input", {
+    },() =>  "Hello"), /* @__PURE__ */ () => createDomElement("input", {
       id: "input",
       name: "something",
       value: "",
-      onchange: function(event) {
+      oninput: function(event) {
         console.log(this.value);
         console.log(event.currentTarget.value);
       }
-    }), /* @__PURE__ */ () => createDomElement("h3", null, /* @__PURE__ */ () => createDomElement("p", null,() =>  "Hello world"), /* @__PURE__ */ () => createDomElement("p", null,() =>  "Hello world"), /* @__PURE__ */ () => createDomElement("p", null,() =>  "Hello world"), /* @__PURE__ */ () => createDomElement("p", null,() =>  "Hello world"), /* @__PURE__ */ () => createDomElement("p", null,() =>  "Hello world"), /* @__PURE__ */ () => createDomElement("p", null, "Hello world")));
+    }), /* @__PURE__ */ () => createDomElement("p", null,() =>  "Hello world"), /* @__PURE__ */ () => createDomElement("p", null,() =>  "Hello world"), /* @__PURE__ */ () => createDomElement("p", null,() =>  "Hello world"), /* @__PURE__ */ () => createDomElement("p", null,() =>  "Hello world"), /* @__PURE__ */ () => createDomElement("p", null,() =>  "Hello world"), /* @__PURE__ */ () => createDomElement("p", null, "Hello world"));
   }
   render(/* @__PURE__ */ () => createDomElement(Something, null), document.getElementById("root"));
 })();

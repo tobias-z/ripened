@@ -1,12 +1,21 @@
+type ObservableFn = (id: number) => void;
+
+interface Properties {
+  observables: Set<ObservableFn>;
+  element: HTMLElement | null;
+}
+
 class Config {
   private static _instance: Config;
 
   private _count: number;
-  private readonly _callbacks: Map<number, Array<(id: number) => void>>;
+  private _shouldIncrement: boolean;
+  private readonly _properties: Map<number, Properties>;
 
   private constructor() {
     this._count = 0;
-    this._callbacks = new Map();
+    this._properties = new Map();
+    this._shouldIncrement = true;
   }
 
   public static getInstance(): Config {
@@ -17,38 +26,41 @@ class Config {
   }
 
   public setNewId() {
-    this._count++;
+    if (this._shouldIncrement) this._count++;
+    else this._shouldIncrement = true;
   }
 
-  public assignCallback(cb: (id: number) => void, id: number = this._count) {
-    const callbacks = this._callbacks.has(id) ? this._callbacks.get(id) : [];
-    callbacks!.push(cb);
-    this._callbacks.set(id, callbacks!);
+  public delayIncrement() {
+    this._shouldIncrement = false;
   }
 
-  public removeCallback(id: number) {
-    this._callbacks.delete(id);
+  public addObservable(cb: ObservableFn, id: number = this._count) {
+    const callbacks: Properties = this._properties.has(id)
+      ? this._properties.get(id)!
+      : {
+          element: null,
+          observables: new Set(),
+        };
+    callbacks.observables.add(cb);
+    this._properties.set(id, callbacks!);
   }
 
-  public getCallback(id: number) {
-    return this._callbacks.get(id);
+  public removeObservable(observable: ObservableFn, id: number = this._count) {
+    if (!this._properties.has(id)) return;
+    const property = this._properties.get(id)!;
+    property.observables.delete(observable);
   }
 
-  public getActiveCallback() {
-    return this._callbacks.get(this._count);
+  public notify(id: number) {
+    this.getObservable(id)?.observables.forEach(cb => cb(id));
+  }
+
+  public getObservable(id: number) {
+    return this._properties.get(id);
   }
 
   public get count(): number {
     return this._count;
-  }
-
-  public get callbacks(): Map<number, Array<(id: number) => void>> {
-    return this._callbacks;
-  }
-
-  public getUniqueIdForNoneState() {
-    // TODO: Make better solution
-    return Math.random();
   }
 }
 
